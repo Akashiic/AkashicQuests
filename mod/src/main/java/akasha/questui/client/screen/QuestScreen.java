@@ -99,6 +99,11 @@ public class QuestScreen extends GuiScreenCanvas implements INeedsRefresh, MapHo
         return new QuestScreen(parent);
     }
 
+    /** The chapter the next opened book shows (OpenRequests); ignored when the panel does not list it. */
+    public static void preselectChapter(UUID id) {
+        selectedChapter = id;
+    }
+
     private QuestScreen(GuiScreen parent) {
         super(parent);
         useMargins(false);

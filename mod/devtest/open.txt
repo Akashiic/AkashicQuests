@@ -1,0 +1,38 @@
+# Opening the book on request (OpenRequests): server trigger (tellraw, what a CustomNPC dialog option runs),
+# client command, quest by name, unknown target and a forged plain-text trigger that must not open anything.
+# python3 ../tools/bqgen/bqgen.py build --chapters devtest/perfquests --out run/client/config/betterquesting
+# run/client/options.txt: pauseOnLostFocus:false (the book does not open over the pause menu).
+world
+waitquests
+wait 60
+cmd /tellraw @p {"translate":"akashaquestui.open","with":["taumaturgia avancada"]}
+wait 20
+screen
+shot o01_trigger_chapter
+key 1
+wait 10
+clientcmd /akashaquests chapter:grande
+wait 20
+screen
+shot o02_command_chapter
+key 1
+wait 10
+cmd /tellraw @p {"translate":"akashaquestui.open","with":["quest:Q5"]}
+wait 20
+screen
+shot o03_trigger_quest
+key 1
+key 1
+wait 10
+clientcmd /akashaquests nao existe
+wait 20
+screen
+shot o04_not_found
+key 1
+wait 10
+cmd /tellraw @p {"text":"akashaquestui.open"}
+cmd /say akashaquestui.open
+wait 30
+screen
+shot o05_forged
+exit

@@ -94,3 +94,5 @@ akashaquestui.status_short=[%s, %s]  %s/%s
 akashaquestui.image_stale=The image was changed by someone else meanwhile; your change was not applied.
 akashaquestui.state_done=Completed
 akashaquestui.state_claimed=Claimed
+akashaquestui.open.not_found=No chapter or quest found for "%s"; opening the book.
+akashaquestui.open.locked=Chapter "%s" is still locked; opening the book.

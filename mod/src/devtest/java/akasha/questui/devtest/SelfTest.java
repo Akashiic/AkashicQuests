@@ -44,6 +44,8 @@ import cpw.mods.fml.common.gameevent.TickEvent;
  * wait N                     wait N client ticks
  * waitquests                 wait until the player exists and quests are synced
  * cmd /text                  send a chat command
+ * clientcmd /text            run a client command (as typed in the chat box), else send it
+ * screen                     log the class of the current screen
  * complete title             /bq_admin complete for the quest whose name contains `title`
  * open                       open BQ's quest book (intercepted by the mod)
  * chapter title              select a chapter by (partial) name
@@ -216,6 +218,19 @@ public class SelfTest {
             case "cmd":
                 mc.thePlayer.sendChatMessage(arg);
                 waitTicks = 5;
+                break;
+            case "clientcmd":
+                // as typed in the chat box: client commands (ClientCommandHandler) first, like GuiChat does
+                if (net.minecraftforge.client.ClientCommandHandler.instance.executeCommand(mc.thePlayer, arg) == 0)
+                    mc.thePlayer.sendChatMessage(arg);
+                waitTicks = 5;
+                break;
+            case "screen":
+                LOG.info(
+                    "screen: {}",
+                    s == null ? "none"
+                        : s.getClass()
+                            .getName());
                 break;
             case "complete":
                 UUID q = questByName(arg);

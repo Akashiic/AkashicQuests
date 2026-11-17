@@ -1,3 +1,15 @@
+# Changelog — Akasha Quests UI 1.0.5
+
+**Abrir o livro por comando ou por NPC**
+- `/akashaquests [capítulo | quest | chapter:<nome> | quest:<nome> | ID]` abre o livro, opcionalmente num
+  capítulo ou na janela de uma quest.
+- O servidor pode abrir o livro de um jogador com
+  `/tellraw <jogador> {"translate":"akashaquestui.open","with":["<alvo>"]}`: é o comando para uma opção
+  de diálogo do CustomNPC (`@dp`). Não precisa de nada no servidor. A mensagem não aparece no chat;
+  fala de jogador não dispara (chega embrulhada). Bloqueios e visibilidade do BQ são respeitados.
+- Testado num cliente real headless (`devtest/open.txt`): gatilho para capítulo e para quest, comando,
+  alvo inexistente (aviso + livro) e gatilho forjado como texto e por `/say` (não abre).
+
 # Changelog — Akasha Quests UI 1.0.4
 
 **Interface**
