@@ -1,0 +1,17 @@
+# AkashaQuestStats (plugin/) reader against the real BetterQuesting: counts follow /bq_admin complete and reset.
+# python3 ../tools/bqgen/bqgen.py build --chapters devtest/perfquests --out run/client/config/betterquesting
+# Expected: 0 completed, then 4 (L0, Q199, Q198, Q197), then 3 after resetting Q198.
+world
+waitquests
+wait 60
+ranking
+complete L0
+complete Q199
+complete Q198
+complete Q197
+wait 40
+ranking
+reset Q198
+wait 40
+ranking
+exit

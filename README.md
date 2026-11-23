@@ -46,6 +46,13 @@ O GitHub Actions (`.github/workflows/build.yml`) compila e testa o mod e valida 
 na `main` e em pull requests. O jar sai como artefato `.jar` (sem zip) na página da execução; uma tag
 `v*` publica o jar numa release.
 
+## Top de quests no holograma (servidor, opcional)
+
+O plugin **AkashaQuestStats** (`plugin/`) lê o progresso do BetterQuesting no servidor Crucible e cria
+placeholders do HolographicDisplays 2.x com o top de jogadores que mais concluíram quests (`{aq_top1}`,
+`{aq_top1_name}`, `{aq_top1_count}`, ...). Vai em `plugins/` do servidor que roda o BQ:
+`dist/plugins/AkashaQuestStats-1.0.0.jar`. Detalhes em [plugin/README.md](plugin/README.md).
+
 ## Instalação
 
 Copie o conteúdo de `dist/config/betterquesting/` para `config/betterquesting/` do servidor

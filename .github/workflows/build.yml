@@ -62,6 +62,33 @@ jobs:
         with:
           files: ${{ steps.jar.outputs.path }}
 
+  plugin:
+    name: Server plugin (AkashaQuestStats)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: plugin
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      # pinned libs (sha256), Java 8 bytecode, PluginTests, deterministic jar
+      - name: Build and test
+        run: ./build.sh
+
+      - name: dist/ jar must match the sources
+        run: cmp build/AkashaQuestStats-*.jar ../dist/plugins/AkashaQuestStats-*.jar
+
+      - uses: actions/upload-artifact@v7
+        with:
+          path: plugin/build/AkashaQuestStats-*.jar
+          archive: false
+          if-no-files-found: error
+
   quests:
     name: Quest book (bqgen)
     runs-on: ubuntu-latest

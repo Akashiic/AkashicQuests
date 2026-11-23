@@ -1,0 +1,21 @@
+# AkashaQuestStats: top de quests do BetterQuesting para o HolographicDisplays.
+# Depois de editar: /aqstats reload
+
+# A cada quantos segundos o ranking é recalculado a partir do BetterQuesting (mínimo 5).
+refresh-seconds: 60
+
+# Quantas posições viram placeholders: {aq_top1} ... {aq_topN} (máximo 100).
+top-size: 10
+
+# Esconder do top os jogadores que o BetterQuesting marca como OP.
+hide-ops: false
+
+# Nomes que nunca aparecem no top (contas de staff, testes...). Continuam contando nos totais.
+hidden-players: []
+
+format:
+  # {pos} posição, {name} jogador, {count} quests concluídas, {total} quests no livro. Cores com &.
+  line: "&e{pos}. &f{name} &7- &a{count}"
+  # Usados quando a posição ainda não tem ninguém.
+  empty-name: "&7---"
+  empty-count: "&70"

@@ -6,6 +6,9 @@ version = project.ext.modVersion
 sourceSets {
     devtest {
         java.srcDir 'src/devtest/java'
+        // the server plugin's BetterQuesting reader (no Bukkit classes), checked against the real BQ in SP
+        java.srcDir '../plugin/src/main/java'
+        java.include 'akasha/questui/devtest/**', 'akasha/queststats/BqReader.java', 'akasha/queststats/Ranking.java'
         compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
         runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
     }

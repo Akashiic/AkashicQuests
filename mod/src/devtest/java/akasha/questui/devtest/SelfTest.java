@@ -46,6 +46,8 @@ import cpw.mods.fml.common.gameevent.TickEvent;
  * cmd /text                  send a chat command
  * clientcmd /text            run a client command (as typed in the chat box), else send it
  * screen                     log the class of the current screen
+ * reset title                /bq_admin reset for the quest whose name contains `title` (all players)
+ * ranking                    log AkashaQuestStats' ranking (plugin/), read from the integrated server's BQ
  * complete title             /bq_admin complete for the quest whose name contains `title`
  * open                       open BQ's quest book (intercepted by the mod)
  * chapter title              select a chapter by (partial) name
@@ -225,6 +227,33 @@ public class SelfTest {
                     mc.thePlayer.sendChatMessage(arg);
                 waitTicks = 5;
                 break;
+            case "reset": {
+                UUID rq = questByName(arg);
+                if (rq != null) mc.thePlayer.sendChatMessage("/bq_admin reset " + UuidConverter.encodeUuid(rq));
+                else LOG.warn("no quest named {}", arg);
+                waitTicks = 5;
+                break;
+            }
+            case "ranking": {
+                // AkashaQuestStats' reader on the integrated server's BetterQuesting (singleplayer shares the DB)
+                akasha.queststats.Ranking r = akasha.queststats.Ranking.of(
+                    akasha.queststats.BqReader.completions(),
+                    akasha.queststats.BqReader.totalQuests(),
+                    akasha.queststats.BqReader::name,
+                    e -> false);
+                StringBuilder sb = new StringBuilder();
+                for (akasha.queststats.Ranking.Entry e : r.entries) sb.append(' ')
+                    .append(e.name)
+                    .append('=')
+                    .append(e.completed);
+                LOG.info(
+                    "ranking: quests={} players={} completed={} top:{}",
+                    r.totalQuests,
+                    r.players,
+                    r.totalCompleted,
+                    sb);
+                break;
+            }
             case "screen":
                 LOG.info(
                     "screen: {}",

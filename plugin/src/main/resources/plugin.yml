@@ -1,0 +1,14 @@
+name: AkashaQuestStats
+main: akasha.queststats.AkashaQuestStats
+version: 1.0.0
+description: Top de quests do BetterQuesting em placeholders do HolographicDisplays
+author: Rede Akashic
+softdepend: [HolographicDisplays]
+commands:
+  aqstats:
+    description: Top de quests do BetterQuesting
+    usage: /aqstats [top|reload|<jogador>]
+permissions:
+  akashaqueststats.admin:
+    description: /aqstats reload
+    default: op
