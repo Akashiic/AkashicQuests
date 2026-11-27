@@ -1,3 +1,12 @@
+# Changelog — Akasha Quests UI 1.3.0
+
+**Lista negra de dimensões nas regras de acesso**
+- Nova opção **Exceto dimensões**: a categoria vale em todo lugar, menos nas dimensões listadas.
+  Ex.: Campanha Principal com `exclude_dims: [7]` não é validada no mundo do Skyblock, enquanto o
+  Skyblock (`dims: [7]`) só vale lá. Funciona junto com a lista branca (ela é conferida primeiro).
+- Menu: Regras de acesso → Exceto dimensões. YAML: `exclude_dims` em `categories:`. Faixa automática
+  "Não vale na dimensão …" quando só há lista negra.
+
 # Changelog — Akasha Quests UI 1.2.0
 
 **Regras de acesso nas categorias**

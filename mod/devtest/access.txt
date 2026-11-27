@@ -21,6 +21,7 @@ wait 20
 shot a03_banner_map
 serverlock Estante
 serverlock Sementes
+serverlock Começar
 cmd /bq_admin edit true
 wait 20
 edit on

@@ -535,6 +535,7 @@ public class ChapterPanel extends Widget {
     public static String bannerText(CategoryRule rule) {
         if (rule == null) return "";
         if (!rule.banner.isEmpty()) return QuestTranslation.translate(rule.banner);
+        if (rule.dims.isEmpty() && !rule.exclude.isEmpty()) return Lang.get("category_not_dims", rule.excludeText());
         return Lang.get("category_only_dims", rule.dimsText());
     }
 
@@ -542,6 +543,7 @@ public class ChapterPanel extends Widget {
     public static List<String> ruleSummary(CategoryRule rule) {
         List<String> l = new ArrayList<>();
         l.add("§8" + Lang.get("rule_dims", rule.dims.isEmpty() ? Lang.get("rule_any") : rule.dimsText()));
+        if (!rule.exclude.isEmpty()) l.add("§8" + Lang.get("rule_exclude", rule.excludeText()));
         l.add("§8" + Lang.get("rule_perm", rule.perm.isEmpty() ? Lang.get("rule_none") : rule.perm));
         l.add("§8" + Lang.get("rule_outside", Lang.get("rule_mode." + rule.outside)));
         return l;

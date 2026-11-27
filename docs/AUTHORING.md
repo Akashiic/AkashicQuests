@@ -161,6 +161,10 @@ categories:
     outside: banner        # fora das dimensões: hide (esconde) ou banner (mostra com faixa)
     banner: "Válido somente no Skyblock"
     color: "#4FC3F7"       # cor da faixa (opcional)
+  Campanha Principal:
+    exclude_dims: [7]      # lista negra: vale em todo lugar, menos nestas dimensões
+    outside: banner
+    banner: "A campanha não vale no Skyblock"
 ```
 
 Sem a permissão a categoria fica oculta até o nó ser dado (pelo plugin de permissões do servidor

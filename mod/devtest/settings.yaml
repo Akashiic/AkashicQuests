@@ -3,6 +3,11 @@ pack_name: "Akasha Quests — teste"
 default_icon: minecraft:book
 default_category: "Campanha Principal"
 categories:
+  # Blacklist: the campaign does not count in the Overworld of the dev world (stands for a Skyblock dimension).
+  Campanha Principal:
+    exclude_dims: [0]
+    outside: banner
+    banner: "A campanha não vale aqui (teste da lista de exclusão)"
   # Only in the End (dimension 1); elsewhere listed with a banner and its quests locked.
   Extras:
     dims: [1]

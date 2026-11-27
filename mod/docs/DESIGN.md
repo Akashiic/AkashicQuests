@@ -329,17 +329,20 @@ No JSON do BQ (multi-arquivo) aparecem como `"akashaui:10": {"shape:8": "hexagon
 
 ## 11. Regras de acesso das categorias
 
-Uma categoria pode valer só em certas **dimensões** e/ou só para quem tem um **nó de permissão**.
+Uma categoria pode valer só em certas **dimensões** (lista branca), **não valer** em outras (lista
+negra) e/ou valer só para quem tem um **nó de permissão**. Ex.: Skyblock com `dims = 7` e Campanha
+Principal com `exclude = 7`: uma não anda no mundo da outra.
 As regras ficam nas configurações globais do BQ (`QuestSettings`, lista `akashaui:categories`), então
 vão junto com o banco de quests, as DefaultQuests e a sincronização do BQ.
 
 | Campo | Tipo | Significado |
 | --- | --- | --- |
 | `name` | string | nome da categoria |
-| `dims` | string | IDs das dimensões, `"7, 8"`; vazio = qualquer |
+| `dims` | string | IDs das dimensões onde vale (lista branca), `"7, 8"`; vazio = qualquer |
+| `exclude` | string | IDs das dimensões onde **não** vale (lista negra), conferida depois de `dims` |
 | `perm` | string | nó de permissão; vazio = todos |
 | `outside` | string | fora das dimensões: `hide` (esconde) ou `banner` (mostra com faixa) |
-| `banner` | string | texto da faixa; vazio = "Válido somente na dimensão …" |
+| `banner` | string | texto da faixa; vazio = "Válido somente na dimensão …" (ou "Não vale na dimensão …" só com lista negra) |
 | `color` | int | cor ARGB da faixa e da barra da categoria (padrão `#E0A030`) |
 
 **Estado para o jogador.** Sem a permissão: categoria **oculta** (aparece quando a permissão é dada).
@@ -366,7 +369,7 @@ mod recebe do servidor, pelo canal `akashaquestui`, quais nós usados pelas regr
 mod no servidor ninguém tem nó nenhum (categorias com permissão ficam ocultas) e as regras de
 dimensão são só visuais.
 
-**Edição.** Clique direito na categoria → Regras de acesso: dimensões, permissão, esconder ou faixa,
+**Edição.** Clique direito na categoria → Regras de acesso: dimensões, exceto dimensões, permissão, esconder ou faixa,
 texto da faixa, remover regra. O pacote vai ao servidor (só operadores), que grava nas configurações
 do BQ e sincroniza com todos. Renomear a categoria leva a regra junto. No YAML, em
 `quests/settings.yaml` → `categories:` (ver `docs/AUTHORING.md`).

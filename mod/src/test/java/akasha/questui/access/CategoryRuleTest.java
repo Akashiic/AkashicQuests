@@ -27,6 +27,7 @@ public class CategoryRuleTest {
         CategoryRule r = new CategoryRule(
             "Skyblock",
             CategoryRule.parseDims("7, 8"),
+            CategoryRule.parseDims("8"),
             "akasha.skyblock",
             CategoryRule.BANNER,
             "Só no Skyblock",
@@ -34,6 +35,7 @@ public class CategoryRuleTest {
         CategoryRule back = CategoryRule.read(r.write());
         assertEquals("Skyblock", back.name);
         assertEquals(r.dims, back.dims);
+        assertEquals(r.exclude, back.exclude);
         assertEquals("akasha.skyblock", back.perm);
         assertEquals(CategoryRule.BANNER, back.outside);
         assertEquals("Só no Skyblock", back.banner);
@@ -52,6 +54,17 @@ public class CategoryRuleTest {
         assertTrue(d.dimensionOk(1));
         assertFalse(d.dimensionOk(0));
         assertEquals(CategoryRule.HIDE, e.withOutside("weird").outside);
+        // blacklist: everywhere except 7 (a main campaign that must not count in the Skyblock dimension)
+        CategoryRule x = e.withExclude(CategoryRule.parseDims("7"));
+        assertFalse(x.isOpen());
+        assertTrue(x.dimensionOk(0));
+        assertTrue(x.dimensionOk(-1));
+        assertFalse(x.dimensionOk(7));
+        // both: whitelist first, then blacklist
+        CategoryRule both = x.withDims(CategoryRule.parseDims("7, 8"));
+        assertTrue(both.dimensionOk(8));
+        assertFalse(both.dimensionOk(7));
+        assertFalse(both.dimensionOk(0));
         assertFalse(
             e.withPerm("a.b")
                 .isOpen());

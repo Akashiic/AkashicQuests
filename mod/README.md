@@ -57,7 +57,7 @@ botão de mão na barra de ferramentas.
 | Editar imagem | clique direito → Editar imagem (usa o navegador de arquivos, o seletor de itens e o editor de texto do BQ) |
 | Atalhos | `Del` remove imagem, `Ctrl+D` duplica, setas movem (Shift: 8), `Ctrl+Z` desfaz, `Ctrl+A` seleciona tudo |
 | Categorias, grupos e ordem dos capítulos | clique direito no capítulo, no grupo ou na categoria |
-| Regras de acesso da categoria (dimensões, permissão, esconder ou faixa) | clique direito na categoria → Regras de acesso |
+| Regras de acesso da categoria (dimensões, exceto dimensões, permissão, esconder ou faixa) | clique direito na categoria → Regras de acesso |
 
 Cada gesto concluído é enviado ao servidor pelos pacotes do próprio BQ e sincronizado para todos.
 

@@ -798,6 +798,13 @@ public class QuestScreen extends GuiScreenCanvas implements INeedsRefresh, MapHo
                     v -> sendRule(category, r.withDims(CategoryRule.parseDims(v))))));
         items.add(
             ContextMenu.item(
+                Lang.get("rule_edit_exclude", r.exclude.isEmpty() ? Lang.get("rule_no_exclude") : r.excludeText()),
+                () -> promptAny(
+                    Lang.get("rule_exclude_prompt"),
+                    r.excludeText(),
+                    v -> sendRule(category, r.withExclude(CategoryRule.parseDims(v))))));
+        items.add(
+            ContextMenu.item(
                 Lang.get("rule_edit_perm", r.perm.isEmpty() ? Lang.get("rule_none") : r.perm),
                 () -> promptAny(Lang.get("rule_perm_prompt"), r.perm, v -> sendRule(category, r.withPerm(v)))));
         items.add(

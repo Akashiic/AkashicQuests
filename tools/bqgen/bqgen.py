@@ -777,27 +777,24 @@ def category_rules(settings, chapters):
     for name, r in (settings.get('categories') or {}).items():
         ctx = 'settings.categories[%r]' % name
         r = r or {}
-        unknown = set(r) - {'dims', 'permission', 'outside', 'banner', 'color'}
+        unknown = set(r) - {'dims', 'exclude_dims', 'permission', 'outside', 'banner', 'color'}
         if unknown:
             raise GenError('%s: unknown key(s) %s' % (ctx, ', '.join(sorted(unknown))))
         if name not in known:
             print('WARNING: %s: no chapter uses this category' % ctx)
-        dims = r.get('dims', [])
-        if isinstance(dims, (int, str)):
-            dims = [d for d in str(dims).replace(';', ',').split(',') if d.strip()]
-        try:
-            dims = [int(d) for d in dims]
-        except (TypeError, ValueError):
-            raise GenError('%s: dims must be dimension ids' % ctx)
+        dims = dim_list(r.get('dims', []), ctx + '.dims')
+        exclude = dim_list(r.get('exclude_dims', []), ctx + '.exclude_dims')
         outside = str(r.get('outside', 'hide'))
         if outside not in ('hide', 'banner'):
             raise GenError('%s: outside must be hide or banner' % ctx)
         perm = str(r.get('permission', '')).strip()
-        if not dims and not perm:
-            raise GenError('%s: a rule needs dims and/or permission' % ctx)
+        if not dims and not exclude and not perm:
+            raise GenError('%s: a rule needs dims, exclude_dims and/or permission' % ctx)
         o = OrderedDict([('name:8', str(name))])
         if dims:
             o['dims:8'] = ', '.join(str(d) for d in dims)
+        if exclude:
+            o['exclude:8'] = ', '.join(str(d) for d in exclude)
         if perm:
             o['perm:8'] = perm
         o['outside:8'] = outside
@@ -810,6 +807,15 @@ def category_rules(settings, chapters):
             o['color:3'] = to_int32(0xFF000000 | int(col))
         out.append(o)
     return out
+
+
+def dim_list(v, ctx):
+    if isinstance(v, (int, str)):
+        v = [d for d in str(v).replace(';', ',').split(',') if d.strip()]
+    try:
+        return [int(d) for d in v]
+    except (TypeError, ValueError):
+        raise GenError('%s: must be dimension ids' % ctx)
 
 
 def to_int32(v):
