@@ -14,6 +14,7 @@ public final class Config {
 
     private static final String UI = "ui";
     private static final String STATE = "state";
+    private static final String ACCESS = "access";
 
     private static Configuration cfg;
 
@@ -32,6 +33,12 @@ public final class Config {
      */
     public static double backgroundOpacity = 0.72;
 
+    /**
+     * Server: who has a category permission node when the server has no Bukkit permissions (DESIGN §11): "op",
+     * "all" or "none".
+     */
+    public static String permissionFallback = "op";
+
     // Client view state, saved across sessions
     public static boolean sidebarPinned = true;
     /** Collapsed groups: the group name, or "category » group" for a group inside a category. */
@@ -45,7 +52,25 @@ public final class Config {
         sync();
     }
 
+    /** Dedicated server: only the access options (the client ones would load client classes). */
+    public static void loadServer(File file) {
+        cfg = new Configuration(file);
+        syncAccess();
+        if (cfg.hasChanged()) cfg.save();
+    }
+
+    private static void syncAccess() {
+        permissionFallback = cfg.getString(
+            "permissionFallback",
+            ACCESS,
+            "op",
+            "Who has a category permission node when the server has no Bukkit permissions (Thermos, Crucible...): "
+                + "op, all or none.",
+            new String[] { "op", "all", "none" });
+    }
+
     private static void sync() {
+        syncAccess();
         enabled = cfg.getBoolean(
             "enabled",
             UI,

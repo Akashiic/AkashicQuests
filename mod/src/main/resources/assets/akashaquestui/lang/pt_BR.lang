@@ -73,6 +73,26 @@ akashaquestui.no_category=Sem categoria
 akashaquestui.new_category=Nova categoria...
 akashaquestui.rename_category=Renomear categoria...
 akashaquestui.remove_category=Remover categoria
+akashaquestui.access_rules=Regras de acesso
+akashaquestui.rule_edit_dims=Dimensões: %s...
+akashaquestui.rule_edit_perm=Permissão: %s...
+akashaquestui.rule_edit_banner=Texto da faixa...
+akashaquestui.rule_clear=Remover regra
+akashaquestui.rule_dims_prompt=IDs das dimensões (separados por vírgula, vazio = qualquer)
+akashaquestui.rule_perm_prompt=Nó de permissão (vazio = todos)
+akashaquestui.rule_banner_prompt=Texto da faixa fora das dimensões (vazio = automático)
+akashaquestui.rule_any=qualquer
+akashaquestui.rule_none=todos
+akashaquestui.rule_dims=Dimensões: %s
+akashaquestui.rule_perm=Permissão: %s
+akashaquestui.rule_outside=Fora das dimensões: %s
+akashaquestui.rule_mode.hide=esconder
+akashaquestui.rule_outside.hide=Fora das dimensões: esconder
+akashaquestui.rule_mode.banner=mostrar com faixa
+akashaquestui.rule_outside.banner=Fora das dimensões: mostrar com faixa
+akashaquestui.rule_needs_server=As regras de acesso precisam do Akasha Quests UI no servidor.
+akashaquestui.category_only_dims=Válido somente na dimensão %s
+akashaquestui.category_hidden_for_you=Oculta para você (dimensão ou permissão)
 akashaquestui.move_up=Mover para cima
 akashaquestui.move_down=Mover para baixo
 akashaquestui.image.title=Imagem do capítulo

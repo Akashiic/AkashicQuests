@@ -319,12 +319,57 @@ Lista NBT `akashaui:images` no capítulo. Cada imagem:
 | --- | --- | --- | --- |
 | quest | `shape` | string | forma (§2); vazio = padrão |
 | capítulo | `category` | string | categoria na barra lateral (nível acima do grupo) |
+| configurações do BQ | `categories` | lista | regras de acesso das categorias (§11) |
 | capítulo | `group` | string | nome do grupo na barra lateral |
 | capítulo | `shape` | string | forma padrão do capítulo |
 | capítulo | `images` | lista | imagens (§8) |
 
 No JSON do BQ (multi-arquivo) aparecem como `"akashaui:10": {"shape:8": "hexagon"}`. O
 `bqgen` gera esses campos a partir do YAML (`shape`, `category`, `group`, `images`).
+
+## 11. Regras de acesso das categorias
+
+Uma categoria pode valer só em certas **dimensões** e/ou só para quem tem um **nó de permissão**.
+As regras ficam nas configurações globais do BQ (`QuestSettings`, lista `akashaui:categories`), então
+vão junto com o banco de quests, as DefaultQuests e a sincronização do BQ.
+
+| Campo | Tipo | Significado |
+| --- | --- | --- |
+| `name` | string | nome da categoria |
+| `dims` | string | IDs das dimensões, `"7, 8"`; vazio = qualquer |
+| `perm` | string | nó de permissão; vazio = todos |
+| `outside` | string | fora das dimensões: `hide` (esconde) ou `banner` (mostra com faixa) |
+| `banner` | string | texto da faixa; vazio = "Válido somente na dimensão …" |
+| `color` | int | cor ARGB da faixa e da barra da categoria (padrão `#E0A030`) |
+
+**Estado para o jogador.** Sem a permissão: categoria **oculta** (aparece quando a permissão é dada).
+Com a permissão, fora das dimensões: oculta (`hide`) ou listada com **faixa** (`banner`): cabeçalho e
+capítulos esmaecidos com cadeado, barra de 2 px na cor da regra, e no mapa uma faixa na cor da regra
+sob o título; as quests aparecem bloqueadas (a visibilidade do mapa ignora a regra, o estado não).
+No modo de edição as categorias ocultas continuam listadas, esmaecidas, e a dica mostra a regra.
+
+**Uma quest é bloqueada** quando *todos* os capítulos que a contêm estão em categorias fechadas
+para o jogador (uma quest da campanha ligada num capítulo de Skyblock continua aberta pela campanha).
+Com o modo de edição do BQ ligado nada é bloqueado.
+
+**Servidor (de verdade).** O mod passa a ter um coremod (ASM puro do Forge, sem Mixin) que insere no
+início de `QuestInstance.isUnlocked(UUID)`, `canSubmit(EntityPlayer)` e `canClaimBasically(EntityPlayer)`
+um `return false` quando a regra fecha a quest. Isso tira a quest do cache de quests ativas do BQ e
+impede detectar/entregar tarefas, concluir e resgatar recompensas. A cada 2 s o servidor relê as
+permissões dos jogadores online; uma mudança, ou a troca de dimensão, refaz o cache de quests do
+jogador na hora.
+
+**Permissões.** Em servidor híbrido (Thermos, Crucible, KCauldron…) o nó é perguntado ao Bukkit, então
+qualquer plugin (PermissionsEx, LuckPerms, GroupManager…) e seus grupos decidem. Sem Bukkit vale
+`access.permissionFallback` em `akashaquestui.cfg`: `op` (padrão), `all` ou `none`. O cliente com o
+mod recebe do servidor, pelo canal `akashaquestui`, quais nós usados pelas regras o jogador tem; sem o
+mod no servidor ninguém tem nó nenhum (categorias com permissão ficam ocultas) e as regras de
+dimensão são só visuais.
+
+**Edição.** Clique direito na categoria → Regras de acesso: dimensões, permissão, esconder ou faixa,
+texto da faixa, remover regra. O pacote vai ao servidor (só operadores), que grava nas configurações
+do BQ e sincroniza com todos. Renomear a categoria leva a regra junto. No YAML, em
+`quests/settings.yaml` → `categories:` (ver `docs/AUTHORING.md`).
 
 ## 10. Paleta
 

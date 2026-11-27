@@ -73,6 +73,26 @@ akashaquestui.no_category=No category
 akashaquestui.new_category=New category...
 akashaquestui.rename_category=Rename category...
 akashaquestui.remove_category=Remove category
+akashaquestui.access_rules=Access rules
+akashaquestui.rule_edit_dims=Dimensions: %s...
+akashaquestui.rule_edit_perm=Permission: %s...
+akashaquestui.rule_edit_banner=Banner text...
+akashaquestui.rule_clear=Remove rule
+akashaquestui.rule_dims_prompt=Dimension IDs (comma separated, empty = any)
+akashaquestui.rule_perm_prompt=Permission node (empty = everyone)
+akashaquestui.rule_banner_prompt=Banner text outside the dimensions (empty = automatic)
+akashaquestui.rule_any=any
+akashaquestui.rule_none=everyone
+akashaquestui.rule_dims=Dimensions: %s
+akashaquestui.rule_perm=Permission: %s
+akashaquestui.rule_outside=Outside the dimensions: %s
+akashaquestui.rule_mode.hide=hide
+akashaquestui.rule_outside.hide=Outside the dimensions: hide
+akashaquestui.rule_mode.banner=show with banner
+akashaquestui.rule_outside.banner=Outside the dimensions: show with banner
+akashaquestui.rule_needs_server=Access rules need Akasha Quests UI on the server.
+akashaquestui.category_only_dims=Only valid in dimension %s
+akashaquestui.category_hidden_for_you=Hidden for you (dimension or permission)
 akashaquestui.move_up=Move up
 akashaquestui.move_down=Move down
 akashaquestui.image.title=Chapter image

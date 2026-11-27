@@ -14,6 +14,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.StringUtils;
 
 import akasha.questui.Config;
+import akasha.questui.access.AccessHooks;
 import akasha.questui.client.data.ChapterImage;
 import akasha.questui.client.data.UiProps;
 import akasha.questui.client.gfx.Shapes;
@@ -74,7 +75,9 @@ public class ChapterModel {
 
         for (Map.Entry<UUID, IQuestLineEntry> qle : line.entrySet()) {
             IQuest quest = QuestDatabase.INSTANCE.get(qle.getKey());
-            if (quest == null || !QuestCache.isQuestShown(quest, pid, player)) continue;
+            // visibility without the category rules: a chapter shown with a banner draws its quests locked
+            if (quest == null || !AccessHooks.ignoringRules(() -> QuestCache.isQuestShown(quest, pid, player)))
+                continue;
 
             QuestNode node = new QuestNode(qle.getKey(), quest, qle.getValue());
             node.main = quest.getProperty(NativeProps.MAIN);

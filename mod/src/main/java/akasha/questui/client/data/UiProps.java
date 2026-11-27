@@ -31,6 +31,10 @@ public final class UiProps {
     /** Chapter: short name for the chapter panel (the full BQ name stays in tooltips and BQ screens). */
     public static final IPropertyType<String> TITLE = new PropertyTypeString(new ResourceLocation(DOMAIN, "title"), "");
 
+    /** Quest settings (global): access rules of the categories (DESIGN §9, CategoryRule). */
+    public static final IPropertyType<NBTTagList> CATEGORY_RULES = new PropertyTypeList(
+        new ResourceLocation(DOMAIN, "categories"));
+
     /** Chapter: list of images (DESIGN §8). */
     public static final IPropertyType<NBTTagList> IMAGES = new PropertyTypeList(new ResourceLocation(DOMAIN, "images"));
 
@@ -41,7 +45,7 @@ public final class UiProps {
 
         private final ResourceLocation key;
 
-        PropertyTypeList(ResourceLocation key) {
+        public PropertyTypeList(ResourceLocation key) {
             this.key = key;
         }
 

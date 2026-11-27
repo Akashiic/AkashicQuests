@@ -37,9 +37,11 @@ Problemas reais do modpack encontrados durante o estudo (detalhes em `patches/`)
 O mod **Akasha Quests UI** (`mod/`) troca as telas do BetterQuesting por uma interface no estilo
 do FTB Quests: barra de capítulos com grupos, mapa com formas e linhas animadas, janela da quest
 sobre o mapa, imagens nos capítulos e um modo de edição para posicionar quests e imagens. É só
-cliente (o servidor não precisa dele) e usa os próprios painéis e pacotes do BQ.
+cliente para a interface; no servidor ele faz valer as regras de acesso das categorias (dimensão e
+permissão, ex.: uma categoria de Skyblock que só vale na dimensão do Skyblock). Usa os próprios
+painéis e pacotes do BQ.
 
-Instale `dist/mods/akashaquestui-1.1.0.jar` na pasta `mods/` do cliente. Detalhes em
+Instale `dist/mods/akashaquestui-1.2.0.jar` na pasta `mods/` do cliente (e do servidor, para as regras de acesso valerem). Detalhes em
 [mod/README.md](mod/README.md); a especificação de design em [mod/docs/DESIGN.md](mod/docs/DESIGN.md).
 
 O GitHub Actions (`.github/workflows/build.yml`) compila e testa o mod e valida o livro a cada push

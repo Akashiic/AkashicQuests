@@ -151,6 +151,22 @@ Sem `shape`, a forma vem do tipo: `info` → `rsquare`, `milestone` → `gear`, 
 | `shape` | Forma padrão das quests do capítulo. |
 | `images` | Imagens no mapa (abaixo). |
 
+**Regras de acesso das categorias** (em `quests/settings.yaml`, precisam do Akasha Quests UI no servidor):
+
+```yaml
+categories:
+  Skyblock:
+    dims: [7]              # só vale nestas dimensões (vazio = qualquer)
+    permission: akasha.skyblock   # só para quem tem o nó (vazio = todos)
+    outside: banner        # fora das dimensões: hide (esconde) ou banner (mostra com faixa)
+    banner: "Válido somente no Skyblock"
+    color: "#4FC3F7"       # cor da faixa (opcional)
+```
+
+Sem a permissão a categoria fica oculta até o nó ser dado (pelo plugin de permissões do servidor
+híbrido; sem Bukkit, `access.permissionFallback`). As quests de categoria fechada não podem ser
+entregues, concluídas nem resgatadas. Detalhes em `mod/docs/DESIGN.md` §11.
+
 **Imagens** (como as imagens de capítulo do FTB Quests):
 
 ```yaml

@@ -3,6 +3,8 @@ package akasha.questui;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import akasha.questui.access.ServerAccess;
+import akasha.questui.net.Net;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
@@ -10,8 +12,9 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.relauncher.Side;
 
 /**
- * FTB Quests style interface for BetterQuesting. Client only: on a dedicated server the mod does nothing, and
- * servers never need it installed (acceptableRemoteVersions = "*").
+ * FTB Quests style interface for BetterQuesting. The interface is client only. On the server the mod enforces the
+ * category access rules (dimension and permission, DESIGN §11); it is optional on both sides
+ * (acceptableRemoteVersions = "*"): without it on the server the rules are only drawn, not enforced.
  */
 @Mod(
     modid = AkashaQuestUI.MODID,
@@ -27,12 +30,17 @@ public class AkashaQuestUI {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         if (FMLCommonHandler.instance()
-            .getSide() != Side.CLIENT) return;
-        Config.load(event.getSuggestedConfigurationFile());
+            .getSide() == Side.CLIENT) Config.load(event.getSuggestedConfigurationFile());
+        else Config.loadServer(event.getSuggestedConfigurationFile());
+        Net.register();
     }
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
+        ServerAccess access = new ServerAccess();
+        FMLCommonHandler.instance()
+            .bus()
+            .register(access);
         if (FMLCommonHandler.instance()
             .getSide() != Side.CLIENT) return;
         akasha.questui.client.ClientSetup.init();

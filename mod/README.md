@@ -4,7 +4,9 @@ Interface no estilo **FTB Quests** para o **BetterQuesting 3.8.79-GTNH** (Minecr
 O BetterQuesting continua dono de tudo: banco de quests, progresso, rede, editores e os painéis
 de tarefa e recompensa. O mod troca só a apresentação.
 
-* **Só cliente.** Coloque o jar em `mods/` do cliente. O servidor não precisa do mod.
+* **Cliente e, para as regras de acesso, servidor.** A interface é só do cliente. No servidor o mod faz valer
+  as regras das categorias (dimensão e permissão); sem ele lá as regras só aparecem, não travam. Os dois lados
+  continuam opcionais (um cliente sem o mod entra num servidor com o mod e vice-versa).
 * **Reversível.** `config/akashaquestui.cfg → enabled=false` volta às telas originais do BQ.
 * **Compatível com o livro sem o mod.** Os dados extras (forma, categoria, grupo, imagens) ficam no domínio
   `akashaui` do próprio NBT do BQ, que os ignora.
@@ -18,6 +20,8 @@ Especificação completa (geometria, layout, cores, dados): [docs/DESIGN.md](doc
 | ![zoom](docs/img/zoom.png) | ![menu](docs/img/menu.png) |
 | **Categorias na barra lateral** | **Menu do capítulo: Categoria** |
 | ![categorias](docs/img/categorias.png) | ![menu de categoria](docs/img/categoria_menu.png) |
+| **Regra de acesso: faixa fora da dimensão** | **Modo de edição: categoria oculta e a regra** |
+| ![faixa](docs/img/regra_faixa.png) | ![edição de regra](docs/img/regra_edicao.png) |
 | **Fundo translúcido (72 %)** | |
 | ![fundo](docs/img/fundo_translucido.png) | |
 | **Modo de edição: imagem selecionada** | **Propriedades da imagem** |
@@ -53,6 +57,7 @@ botão de mão na barra de ferramentas.
 | Editar imagem | clique direito → Editar imagem (usa o navegador de arquivos, o seletor de itens e o editor de texto do BQ) |
 | Atalhos | `Del` remove imagem, `Ctrl+D` duplica, setas movem (Shift: 8), `Ctrl+Z` desfaz, `Ctrl+A` seleciona tudo |
 | Categorias, grupos e ordem dos capítulos | clique direito no capítulo, no grupo ou na categoria |
+| Regras de acesso da categoria (dimensões, permissão, esconder ou faixa) | clique direito na categoria → Regras de acesso |
 
 Cada gesto concluído é enviado ao servidor pelos pacotes do próprio BQ e sincronizado para todos.
 
@@ -65,6 +70,7 @@ Cada gesto concluído é enviado ao servidor pelos pacotes do próprio BQ e sinc
 | `defaultShape` / `mainShape` | `circle` / `hexagon` | Formas padrão |
 | `animateLines`, `lineSpeed` | `true`, `0.5` | Chevrons nas linhas |
 | `pulseAvailable` | `true` | Brilho nas quests que podem ser feitas |
+| `access.permissionFallback` | `op` | Servidor sem Bukkit: quem tem os nós de permissão das categorias (`op`, `all`, `none`) |
 | `backgroundOpacity` | `0.72` | Opacidade do fundo do mapa (1 = sólido; menos mostra o mundo atrás). Também em Opções de visualização |
 
 ## Compilar
@@ -88,7 +94,7 @@ python3 ../tools/bqgen/bqgen.py build --chapters devtest/quests --out run/client
 xvfb-run -a -s "-screen 0 1280x720x24" ./gradlew runClient -Pselftest=devtest/tour.txt
 ```
 
-Roteiros em `devtest/`: `smoke` (primeira olhada), `categories` (categorias, recolher e menus), `tour` (estados, hover, menus, janela, edição,
+Roteiros em `devtest/`: `smoke` (primeira olhada), `categories` (categorias, recolher e menus), `access` (regras de acesso: faixa, oculta, edição e a checagem no servidor; gere o livro com `--settings devtest/settings.yaml` e use `access.permissionFallback=none`), `tour` (estados, hover, menus, janela, edição,
 imagens, zoom, painel recolhido), `edit` (mover, redimensionar e girar imagens, mover quests),
 `small` (1920×1080 com escala automática, GUI 480×270; use `-PselftestWidth=1920 -PselftestHeight=1080`),
 `bqscreens` (telas do próprio BQ com o tema) e `real` (o livro completo de `dist/`). O LWJGL 2

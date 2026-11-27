@@ -770,6 +770,53 @@ def chapter_image(img, chapter, all_quests, ctx):
     return o
 
 
+def category_rules(settings, chapters):
+    """Access rules of the chapter categories (Akasha Quests UI, DESIGN §11) from settings.yaml `categories:`."""
+    out = []
+    known = {c.category for c in chapters}
+    for name, r in (settings.get('categories') or {}).items():
+        ctx = 'settings.categories[%r]' % name
+        r = r or {}
+        unknown = set(r) - {'dims', 'permission', 'outside', 'banner', 'color'}
+        if unknown:
+            raise GenError('%s: unknown key(s) %s' % (ctx, ', '.join(sorted(unknown))))
+        if name not in known:
+            print('WARNING: %s: no chapter uses this category' % ctx)
+        dims = r.get('dims', [])
+        if isinstance(dims, (int, str)):
+            dims = [d for d in str(dims).replace(';', ',').split(',') if d.strip()]
+        try:
+            dims = [int(d) for d in dims]
+        except (TypeError, ValueError):
+            raise GenError('%s: dims must be dimension ids' % ctx)
+        outside = str(r.get('outside', 'hide'))
+        if outside not in ('hide', 'banner'):
+            raise GenError('%s: outside must be hide or banner' % ctx)
+        perm = str(r.get('permission', '')).strip()
+        if not dims and not perm:
+            raise GenError('%s: a rule needs dims and/or permission' % ctx)
+        o = OrderedDict([('name:8', str(name))])
+        if dims:
+            o['dims:8'] = ', '.join(str(d) for d in dims)
+        if perm:
+            o['perm:8'] = perm
+        o['outside:8'] = outside
+        if r.get('banner'):
+            o['banner:8'] = str(r['banner'])
+        if 'color' in r:
+            col = r['color']
+            if isinstance(col, str):
+                col = int(col.lstrip('#'), 16)
+            o['color:3'] = to_int32(0xFF000000 | int(col))
+        out.append(o)
+    return out
+
+
+def to_int32(v):
+    v &= 0xFFFFFFFF
+    return v - (1 << 32) if v >= (1 << 31) else v
+
+
 def chapter_ui_props(c, all_quests):
     ui = OrderedDict()
     if c.category:
@@ -794,9 +841,7 @@ def build(strict=False, out_dir=OUT_DIR, quiet=False):
         if strict:
             raise GenError(msg)
         print('WARNING:', msg)
-    settings = {}
-    if os.path.exists(SETTINGS_FILE):
-        settings = yaml.safe_load(open(SETTINGS_FILE, encoding='utf-8')) or {}
+    settings = SETTINGS
     chapters = load_chapters()
     CHAPTER_IDS.clear()
     CHAPTER_IDS.update(c.id for c in chapters)
@@ -841,7 +886,12 @@ def build(strict=False, out_dir=OUT_DIR, quiet=False):
     qs['pack_name:8'] = settings.get('pack_name', 'Akasha Quests')
     qs['pack_version:3'] = int(settings.get('pack_version', 1))
     qs['party_enable:1'] = 1
-    dump_json(os.path.join(dq, 'QuestSettings.json'), {'betterquesting:10': qs, 'format:8': '3.1.0'})
+    qsettings = OrderedDict([('betterquesting:10', qs)])
+    rules = category_rules(settings, chapters)
+    if rules:
+        qsettings['akashaui:10'] = {'categories:9': OrderedDict(('%d:10' % i, r) for i, r in enumerate(rules))}
+    qsettings['format:8'] = '3.1.0'
+    dump_json(os.path.join(dq, 'QuestSettings.json'), qsettings)
 
     membership = defaultdict(list)
     order_lines = []
@@ -941,8 +991,12 @@ def main():
     ap.add_argument('--strict', action='store_true')
     ap.add_argument('--chapters', help='chapter folder (default: quests/chapters)')
     ap.add_argument('--out', help='output config/betterquesting folder (default: dist/config/betterquesting)')
+    ap.add_argument('--settings', help='settings file (default: quests/settings.yaml)')
     a = ap.parse_args()
-    global CHAPTER_DIR
+    global CHAPTER_DIR, SETTINGS_FILE, SETTINGS
+    if a.settings:
+        SETTINGS_FILE = os.path.abspath(a.settings)
+        SETTINGS = load_settings()
     if a.chapters:
         CHAPTER_DIR = os.path.abspath(a.chapters)
     try:
@@ -966,7 +1020,7 @@ def main():
 def lint_files(files):
     """Lint a subset of chapters. Cross-chapter deps resolve against all chapters."""
     reg = Registry()
-    settings = yaml.safe_load(open(SETTINGS_FILE, encoding='utf-8')) if os.path.exists(SETTINGS_FILE) else {}
+    settings = SETTINGS
     targets = {os.path.abspath(f) for f in files}
     everything = load_chapters(tolerate=targets)
     all_quests = {q.key: q for c in everything for q in c.quests}

@@ -1,3 +1,19 @@
+# Changelog — Akasha Quests UI 1.2.0
+
+**Regras de acesso nas categorias**
+- Uma categoria pode valer só em certas **dimensões** e/ou só para quem tem um **nó de permissão**.
+  Sem a permissão ela fica oculta até ser liberada; fora da dimensão ela some ou aparece com uma
+  **faixa** colorida ("Válido somente no Skyblock"), com os capítulos esmaecidos e as quests bloqueadas.
+- **Trava de verdade no servidor:** quests de categoria fechada não entram nas quests ativas do BQ e
+  não podem ser entregues, concluídas nem resgatadas (coremod ASM, sem dependência extra). A troca
+  de dimensão e a mudança de permissão valem na hora.
+- Permissões pelo Bukkit em servidor híbrido (Thermos, Crucible, KCauldron): PermissionsEx, LuckPerms,
+  GroupManager e grupos funcionam. Sem Bukkit: `access.permissionFallback` (`op`, `all`, `none`).
+- Uma quest ligada também num capítulo aberto (ex.: da campanha) continua aberta.
+- Edição: clique direito na categoria → **Regras de acesso** (dimensões, permissão, esconder ou faixa,
+  texto da faixa). No YAML: `categories:` em `quests/settings.yaml`.
+- O mod agora vai também no servidor para as regras valerem (continua opcional dos dois lados).
+
 # Changelog — Akasha Quests UI 1.1.0
 
 **Categorias na barra lateral**

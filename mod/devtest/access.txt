@@ -1,0 +1,40 @@
+# Category access rules (DESIGN §11). Build the book with devtest/settings.yaml and set
+# access.permissionFallback=none in run/client/config/akashaquestui.cfg (nobody has akasha.segredos).
+world
+waitquests
+wait 40
+cmd /bq_admin edit true
+complete Olá, viajante
+complete Como funciona
+cmd /bq_admin edit false
+wait 40
+open
+wait 30
+chapter Primeiros Passos
+wait 20
+shot a01_panel_rules
+mouse 40 91
+wait 10
+shot a02_banner_tooltip
+chapter Encantamentos
+wait 20
+shot a03_banner_map
+serverlock Estante
+serverlock Sementes
+cmd /bq_admin edit true
+wait 20
+edit on
+wait 20
+shot a04_edit_shows_hidden
+click 40 91 1
+wait 5
+shot a05_category_menu
+menu Outside the dimensions: hide
+wait 40
+key 1
+cmd /bq_admin edit false
+wait 40
+edit off
+wait 20
+shot a06_extras_hidden
+exit

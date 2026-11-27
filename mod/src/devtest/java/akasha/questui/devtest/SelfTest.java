@@ -223,6 +223,27 @@ public class SelfTest {
                 else LOG.warn("no quest named {}", arg);
                 waitTicks = 5;
                 break;
+            case "serverlock": {
+                // asks the integrated server (on its own thread) what BQ answers for the quest: proves the
+                // category rules are enforced server side, not only drawn (DESIGN §11)
+                UUID sq = questByName(arg);
+                String label = arg;
+                akasha.questui.access.ServerAccess.schedule(() -> {
+                    net.minecraft.entity.player.EntityPlayerMP sp = (net.minecraft.entity.player.EntityPlayerMP) net.minecraft.server.MinecraftServer
+                        .getServer()
+                        .getConfigurationManager().playerEntityList.get(0);
+                    betterquesting.api.questing.IQuest quest = betterquesting.questing.QuestDatabase.INSTANCE.get(sq);
+                    UUID pid = betterquesting.api.api.QuestingAPI.getQuestingUUID(sp);
+                    LOG.info(
+                        "SERVERCHECK {} dim={} unlocked={} canSubmit={}",
+                        label,
+                        sp.dimension,
+                        quest.isUnlocked(pid),
+                        quest.canSubmit(sp));
+                });
+                waitTicks = 5;
+                break;
+            }
             case "open":
                 mc.displayGuiScreen(new GuiQuestLines(null));
                 break;

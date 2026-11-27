@@ -8,6 +8,8 @@ import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 
+import akasha.questui.access.AccessRules;
+import akasha.questui.access.CategoryRule;
 import akasha.questui.client.data.UiProps;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.enums.EnumLogic;
@@ -47,6 +49,12 @@ public class ChapterInfo {
     public boolean locked;
     public int done;
     public int total;
+    /** Access rule of the category (DESIGN §11), null when open to everyone. */
+    public CategoryRule rule;
+    /** Closed by the rule: no permission, or wrong dimension with outside = hide. Listed only in edit mode. */
+    public boolean ruleHidden;
+    /** Wrong dimension with outside = banner: listed and viewable, its quests locked, a banner on the map. */
+    public boolean ruleBanner;
 
     private ChapterInfo(UUID id, IQuestLine line) {
         this.id = id;
@@ -75,6 +83,18 @@ public class ChapterInfo {
 
         for (Map.Entry<UUID, IQuestLine> entry : QuestLineDatabase.INSTANCE.getOrderedEntries()) {
             IQuestLine ql = entry.getValue();
+            CategoryRule rule = AccessRules.rule(
+                ql.getProperty(UiProps.CATEGORY)
+                    .trim());
+            boolean ruleHidden = false, ruleBanner = false;
+            if (rule != null && player != null) {
+                if (!AccessRules.permissionOk(rule, player)) ruleHidden = true;
+                else if (!rule.dimensionOk(player.dimension)) {
+                    if (CategoryRule.BANNER.equals(rule.outside)) ruleBanner = true;
+                    else ruleHidden = true;
+                }
+            }
+            if (ruleHidden && !canEdit) continue;
             EnumQuestVisibility vis = ql.getProperty(NativeProps.VISIBILITY);
             if (!canEdit && vis == EnumQuestVisibility.HIDDEN) continue;
 
@@ -102,6 +122,9 @@ public class ChapterInfo {
             info.pendingClaim = pending;
             info.allComplete = allComplete && !ql.isEmpty();
             info.locked = !show;
+            info.rule = rule;
+            info.ruleHidden = ruleHidden;
+            info.ruleBanner = ruleBanner;
             info.count(pid);
             out.add(info);
         }

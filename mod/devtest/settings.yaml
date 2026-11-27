@@ -1,0 +1,14 @@
+# Settings of the devtest book (bqgen build --settings devtest/settings.yaml): category access rules (DESIGN §11).
+pack_name: "Akasha Quests — teste"
+default_icon: minecraft:book
+default_category: "Campanha Principal"
+categories:
+  # Only in the End (dimension 1); elsewhere listed with a banner and its quests locked.
+  Extras:
+    dims: [1]
+    outside: banner
+    banner: "Válido somente no Fim"
+    color: "#B07CFF"
+  # Needs a permission node; nobody has it in the dev client (permissionFallback = none in the test config).
+  Segredos:
+    permission: akasha.segredos

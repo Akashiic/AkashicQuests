@@ -1,0 +1,10 @@
+chapter:
+  id: t_cofre
+  title: "Cofre Secreto"
+  category: "Segredos"
+  group: ""
+  order: 30
+  icon: minecraft:ender_chest
+  desc: Só aparece com a permissão akasha.segredos.
+quests:
+  - {id: chave, title: "Chave do Cofre", at: [0, 0], desc: "Um segredo.", tasks: [{get: minecraft:tripwire_hook}]}

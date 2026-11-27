@@ -20,6 +20,9 @@ import net.minecraftforge.common.config.Configuration;
 import org.lwjgl.input.Keyboard;
 
 import akasha.questui.Config;
+import akasha.questui.access.AccessRules;
+import akasha.questui.access.CategoryRule;
+import akasha.questui.access.ClientState;
 import akasha.questui.client.data.ChapterImage;
 import akasha.questui.client.data.ImageSources;
 import akasha.questui.client.data.UiProps;
@@ -37,6 +40,7 @@ import akasha.questui.client.ui.Dialog;
 import akasha.questui.client.ui.Lang;
 import akasha.questui.client.ui.TextPrompt;
 import akasha.questui.client.ui.Widget;
+import akasha.questui.net.Net;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.misc.INeedsRefresh;
 import betterquesting.api.properties.NativeProps;
@@ -318,6 +322,7 @@ public class QuestScreen extends GuiScreenCanvas implements INeedsRefresh, MapHo
     /** Edit mode toggle (toolbar pencil); only effective with BQ edit permission. */
     public void setEditing(boolean state) {
         editing = state;
+        reloadChapters();
         map.refresh();
         layout();
     }
@@ -767,10 +772,60 @@ public class QuestScreen extends GuiScreenCanvas implements INeedsRefresh, MapHo
                     Config.collapsedCategories.add(name.trim());
                     Config.saveState();
                 }
+                CategoryRule old = AccessRules.storedRule(category);
+                if (old != null) Net.CHANNEL.sendToServer(new Net.EditRule(category, old.withName(name.trim())));
                 setCategory(members, name.trim());
             }));
         m.add(Lang.get("remove_category"), PresetIcon.ICON_NEGATIVE, () -> setCategory(members, ""));
+        m.submenu(Lang.get("access_rules"), PresetIcon.ICON_LOCKED, accessItems(category));
         show(m, mx, my);
+    }
+
+    /**
+     * Category access rule editor (DESIGN §11): dimensions, permission node, what happens outside the dimensions and
+     * the banner text. Each change is sent to the server, which saves it in BQ's settings and syncs everyone.
+     */
+    private List<ContextMenu.Item> accessItems(String category) {
+        CategoryRule stored = AccessRules.storedRule(category);
+        CategoryRule r = stored == null ? CategoryRule.empty(category) : stored;
+        List<ContextMenu.Item> items = new ArrayList<>();
+        items.add(
+            ContextMenu.item(
+                Lang.get("rule_edit_dims", r.dims.isEmpty() ? Lang.get("rule_any") : r.dimsText()),
+                () -> promptAny(
+                    Lang.get("rule_dims_prompt"),
+                    r.dimsText(),
+                    v -> sendRule(category, r.withDims(CategoryRule.parseDims(v))))));
+        items.add(
+            ContextMenu.item(
+                Lang.get("rule_edit_perm", r.perm.isEmpty() ? Lang.get("rule_none") : r.perm),
+                () -> promptAny(Lang.get("rule_perm_prompt"), r.perm, v -> sendRule(category, r.withPerm(v)))));
+        items.add(
+            ContextMenu.check(
+                Lang.get("rule_outside.hide"),
+                () -> CategoryRule.HIDE.equals(r.outside),
+                () -> sendRule(category, r.withOutside(CategoryRule.HIDE))));
+        items.add(
+            ContextMenu.check(
+                Lang.get("rule_outside.banner"),
+                () -> CategoryRule.BANNER.equals(r.outside),
+                () -> sendRule(category, r.withOutside(CategoryRule.BANNER))));
+        items.add(
+            ContextMenu.item(
+                Lang.get("rule_edit_banner"),
+                () -> promptAny(Lang.get("rule_banner_prompt"), r.banner, v -> sendRule(category, r.withBanner(v)))));
+        items.add(
+            ContextMenu.item(Lang.get("rule_clear"), () -> sendRule(category, null))
+                .enabled(stored != null));
+        return items;
+    }
+
+    private void sendRule(String category, CategoryRule rule) {
+        if (!ClientState.serverHasMod()) {
+            mc.thePlayer.addChatMessage(new ChatComponentText("§c" + Lang.get("rule_needs_server")));
+            return;
+        }
+        Net.CHANNEL.sendToServer(new Net.EditRule(category, rule));
     }
 
     /** "No category", every existing category and "New category..." for the given chapters. */
@@ -838,6 +893,13 @@ public class QuestScreen extends GuiScreenCanvas implements INeedsRefresh, MapHo
         if (i < 0 || j < 0) return;
         Collections.swap(order, i, j);
         NetChapterEdit.requestReorder(order);
+    }
+
+    /** Like {@link #prompt} but an empty answer is accepted (clears the value). */
+    private void promptAny(String title, String initial, java.util.function.Consumer<String> done) {
+        closePopup();
+        openPopup(
+            new TextPrompt(title, initial, this::closePopup, s -> done.accept(s.trim())).layoutCentered(width, height));
     }
 
     private void prompt(String title, String initial, java.util.function.Consumer<String> done) {
@@ -1105,6 +1167,17 @@ public class QuestScreen extends GuiScreenCanvas implements INeedsRefresh, MapHo
         if (info.total > 0) {
             int bw = (int) Math.round((pw - 2) * info.done / (double) info.total);
             Draw.rect(px + 1, py + 14, px + 1 + bw, py + 15, Palette.ACCENT);
+        }
+        if ((info.ruleBanner || info.ruleHidden) && info.rule != null) {
+            // the category is closed here (DESIGN §11): a banner in the rule colour under the title
+            String text = info.ruleHidden ? Lang.get("category_hidden_for_you") : ChapterPanel.bannerText(info.rule);
+            text = Draw.ellipsize(text, maxW - 10);
+            int bw = Draw.font()
+                .getStringWidth(text) + 14;
+            int by = py + 20;
+            Draw.panel(px, by, px + bw, by + 14, Palette.panelBg(), Palette.PANEL_EDGE);
+            Draw.rect(px + 1, by + 1, px + 4, by + 13, info.rule.color);
+            Draw.text(text, px + 8, by + 3, info.rule.color, false);
         }
     }
 

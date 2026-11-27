@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.lwjgl.opengl.GL11;
 
 import akasha.questui.Config;
+import akasha.questui.access.CategoryRule;
 import akasha.questui.client.gfx.Anim;
 import akasha.questui.client.gfx.Draw;
 import akasha.questui.client.gfx.Palette;
@@ -72,6 +73,9 @@ public class ChapterPanel extends Widget {
         /** Category rows only: progress and badges summed over its chapters. */
         int done, total;
         boolean pending, complete;
+        /** Category rows only: access rule and its state for this player (DESIGN §11). */
+        CategoryRule rule;
+        boolean ruleBanner, ruleHidden;
 
         Row(String category, String group, ChapterInfo info, int y, int h) {
             this.category = category;
@@ -192,6 +196,9 @@ public class ChapterPanel extends Widget {
                 head.total += c.total;
                 head.pending |= c.pendingClaim;
                 head.complete &= c.allComplete;
+                if (c.rule != null) head.rule = c.rule;
+                head.ruleBanner |= c.ruleBanner;
+                head.ruleHidden |= c.ruleHidden;
             }
             rows.add(head);
             yy += CATEGORY_ROW;
@@ -329,21 +336,31 @@ public class ChapterPanel extends Widget {
         Draw.text(title, x + PAD, y + 5, Palette.TEXT, true);
     }
 
-    /** Category header: tinted band, divider above (except at the top), accent title, summed state badge. */
+    /**
+     * Category header: tinted band, divider above (except at the top), accent title, summed state badge. A category
+     * with an access rule gets a 2 px bar in the rule colour; closed for this player (banner, or hidden but listed
+     * in edit mode) it is dimmed with a lock.
+     */
     private void drawCategory(Row r, int ry, int dw, boolean hot, boolean divider) {
         Draw.rect(x, ry, x + dw - 1, ry + r.h, hot ? Palette.ROW_HOVER : 0x0FFFFFFF);
         if (divider) Draw.rect(x, ry, x + dw - 1, ry + 1, Palette.PANEL_EDGE);
+        if (r.rule != null) Draw.rect(x, ry + (divider ? 1 : 0), x + 2, ry + r.h, r.rule.color);
+        boolean closed = r.ruleBanner || r.ruleHidden;
+        int color = r.ruleHidden ? Palette.TEXT_OFF : (r.ruleBanner ? r.rule.color : Palette.ACCENT);
         boolean collapsed = Config.collapsedCategories.contains(r.category);
-        Draw.triangle(x + PAD, ry + 5, 6, collapsed ? Draw.RIGHT : Draw.DOWN, Palette.ACCENT);
+        Draw.triangle(x + PAD, ry + 5, 6, collapsed ? Draw.RIGHT : Draw.DOWN, color);
         int bx = x + dw - 1 - PAD - BADGE;
         int by = ry + (r.h - BADGE) / 2;
         Draw.text(
             Draw.ellipsize(QuestTranslation.translate(r.category), bx - 2 - (x + PAD + 9)),
             x + PAD + 9,
             ry + 4,
-            Palette.ACCENT,
+            color,
             true);
-        if (r.pending) {
+        if (closed) {
+            Draw.bind(Textures.BADGE_LOCK);
+            Draw.tex(bx, by, bx + BADGE, by + BADGE, 0xFFFFFFFF);
+        } else if (r.pending) {
             Draw.bind(Textures.BADGE_ALERT);
             Draw.tex(bx, by, bx + BADGE, by + BADGE, 0xFFFFFFFF);
         } else if (r.complete && r.total > 0) {
@@ -379,7 +396,8 @@ public class ChapterPanel extends Widget {
         GL11.glDisable(GL11.GL_DEPTH_TEST);
         if (c.locked) Draw.rect(ix, iy, ix + ICON, iy + ICON, 0x8C000000);
 
-        int color = c.locked ? Palette.TEXT_OFF
+        boolean closed = c.locked || c.ruleBanner || c.ruleHidden;
+        int color = closed && !sel ? Palette.TEXT_OFF
             : (sel ? 0xFFFFFFFF : (c.allComplete ? Palette.TEXT_DONE : Palette.TEXT_CHAPTER));
         int textX = ix + ICON + 4;
         int maxW = x + dw - 1 - PAD - BADGE - 2 - textX;
@@ -396,7 +414,7 @@ public class ChapterPanel extends Widget {
         } else if (c.allComplete) {
             Draw.bind(Textures.BADGE_CHECK);
             Draw.tex(bx, by, bx + BADGE, by + BADGE, 0xFFFFFFFF);
-        } else if (c.locked) {
+        } else if (closed) {
             Draw.bind(Textures.BADGE_LOCK);
             Draw.tex(bx, by, bx + BADGE, by + BADGE, 0xFFFFFFFF);
         }
@@ -489,6 +507,11 @@ public class ChapterPanel extends Widget {
                     r.total,
                     String.format("%.1f", r.total > 0 ? r.done * 100.0 / r.total : 0)));
             if (r.pending) tt.add("§6" + Lang.get("rewards_waiting"));
+            if (r.rule != null) {
+                if (r.ruleBanner) tt.add("§e" + bannerText(r.rule));
+                if (r.ruleHidden) tt.add("§c" + Lang.get("category_hidden_for_you"));
+                if (host.isEditing()) tt.addAll(ruleSummary(r.rule));
+            }
             return tt;
         }
         if (r == null || r.info == null) return null;
@@ -503,7 +526,25 @@ public class ChapterPanel extends Widget {
         tt.add("§7" + Lang.get("progress", c.done, c.total, String.format("%.1f", c.percent())));
         if (c.pendingClaim) tt.add("§6" + Lang.get("rewards_waiting"));
         if (c.locked) tt.add("§7" + Lang.get("chapter_locked"));
+        if (c.ruleBanner) tt.add("§e" + bannerText(c.rule));
+        if (c.ruleHidden) tt.add("§c" + Lang.get("category_hidden_for_you"));
         return tt;
+    }
+
+    /** Banner of a rule: its own text, or "Only in dimension(s) ..." (DESIGN §11). */
+    public static String bannerText(CategoryRule rule) {
+        if (rule == null) return "";
+        if (!rule.banner.isEmpty()) return QuestTranslation.translate(rule.banner);
+        return Lang.get("category_only_dims", rule.dimsText());
+    }
+
+    /** Edit mode: the rule in a few tooltip lines. */
+    public static List<String> ruleSummary(CategoryRule rule) {
+        List<String> l = new ArrayList<>();
+        l.add("§8" + Lang.get("rule_dims", rule.dims.isEmpty() ? Lang.get("rule_any") : rule.dimsText()));
+        l.add("§8" + Lang.get("rule_perm", rule.perm.isEmpty() ? Lang.get("rule_none") : rule.perm));
+        l.add("§8" + Lang.get("rule_outside", Lang.get("rule_mode." + rule.outside)));
+        return l;
     }
 
     private static List<String> single(String s) {
