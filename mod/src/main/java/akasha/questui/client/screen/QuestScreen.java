@@ -781,10 +781,8 @@ public class QuestScreen extends GuiScreenCanvas implements INeedsRefresh, MapHo
         for (ChapterInfo c : chapters.getChapters()) if (!c.category.isEmpty()) cats.add(c.category);
         for (String k : cats) {
             items.add(
-                ContextMenu.check(
-                    QuestTranslation.translate(k),
-                    () -> k.equals(current),
-                    () -> setCategory(targets, k)));
+                ContextMenu
+                    .check(QuestTranslation.translate(k), () -> k.equals(current), () -> setCategory(targets, k)));
         }
         items.add(
             ContextMenu.item(
