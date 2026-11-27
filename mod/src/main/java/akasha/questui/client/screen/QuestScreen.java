@@ -723,6 +723,10 @@ public class QuestScreen extends GuiScreenCanvas implements INeedsRefresh, MapHo
                     "",
                     name -> setGroup(Collections.singletonList(info), name.trim()))));
         m.submenu(Lang.get("group"), PresetIcon.ICON_FOLDER_CLOSED, groupItems);
+        m.submenu(
+            Lang.get("category"),
+            PresetIcon.ICON_BOOKS,
+            categoryItems(info.category, Collections.singletonList(info)));
         m.submenu(Lang.get("chapter_shape"), PresetIcon.ICON_PAINT, chapterShapeItems(info.id, info.line));
         m.add(Lang.get("move_up"), PresetIcon.ICON_UP, () -> moveChapter(info, -1))
             .enabled(neighbour(info, -1) != null);
@@ -732,23 +736,71 @@ public class QuestScreen extends GuiScreenCanvas implements INeedsRefresh, MapHo
     }
 
     @Override
-    public void groupContextMenu(String group, int mx, int my) {
+    public void groupContextMenu(String category, String group, int mx, int my) {
+        List<ChapterInfo> members = new ArrayList<>();
+        for (ChapterInfo c : chapters.getChapters()) {
+            if (c.category.equals(category) && c.group.equals(group)) members.add(c);
+        }
         ContextMenu m = menu();
         m.add(Lang.get("rename_group"), PresetIcon.ICON_PROPS, () -> prompt(Lang.get("rename_group"), group, name -> {
-            List<ChapterInfo> members = new ArrayList<>();
-            for (ChapterInfo c : chapters.getChapters()) if (c.group.equals(group)) members.add(c);
-            if (Config.collapsedGroups.remove(group)) {
-                Config.collapsedGroups.add(name.trim());
+            if (Config.collapsedGroups.remove(ChapterPanel.groupKey(category, group))) {
+                Config.collapsedGroups.add(ChapterPanel.groupKey(category, name.trim()));
                 Config.saveState();
             }
             setGroup(members, name.trim());
         }));
-        m.add(Lang.get("ungroup"), PresetIcon.ICON_NEGATIVE, () -> {
-            List<ChapterInfo> members = new ArrayList<>();
-            for (ChapterInfo c : chapters.getChapters()) if (c.group.equals(group)) members.add(c);
-            setGroup(members, "");
-        });
+        m.add(Lang.get("ungroup"), PresetIcon.ICON_NEGATIVE, () -> setGroup(members, ""));
+        m.submenu(Lang.get("category"), PresetIcon.ICON_BOOKS, categoryItems(category, members));
         show(m, mx, my);
+    }
+
+    @Override
+    public void categoryContextMenu(String category, int mx, int my) {
+        List<ChapterInfo> members = new ArrayList<>();
+        for (ChapterInfo c : chapters.getChapters()) if (c.category.equals(category)) members.add(c);
+        ContextMenu m = menu();
+        m.add(
+            Lang.get("rename_category"),
+            PresetIcon.ICON_PROPS,
+            () -> prompt(Lang.get("rename_category"), category, name -> {
+                if (Config.collapsedCategories.remove(category)) {
+                    Config.collapsedCategories.add(name.trim());
+                    Config.saveState();
+                }
+                setCategory(members, name.trim());
+            }));
+        m.add(Lang.get("remove_category"), PresetIcon.ICON_NEGATIVE, () -> setCategory(members, ""));
+        show(m, mx, my);
+    }
+
+    /** "No category", every existing category and "New category..." for the given chapters. */
+    private List<ContextMenu.Item> categoryItems(String current, List<ChapterInfo> targets) {
+        List<ContextMenu.Item> items = new ArrayList<>();
+        items.add(ContextMenu.check(Lang.get("no_category"), current::isEmpty, () -> setCategory(targets, "")));
+        Set<String> cats = new LinkedHashSet<>();
+        for (ChapterInfo c : chapters.getChapters()) if (!c.category.isEmpty()) cats.add(c.category);
+        for (String k : cats) {
+            items.add(
+                ContextMenu.check(
+                    QuestTranslation.translate(k),
+                    () -> k.equals(current),
+                    () -> setCategory(targets, k)));
+        }
+        items.add(
+            ContextMenu.item(
+                Lang.get("new_category"),
+                () -> prompt(Lang.get("new_category"), "", name -> setCategory(targets, name.trim()))));
+        return items;
+    }
+
+    private void setCategory(List<ChapterInfo> infos, String category) {
+        for (ChapterInfo c : infos) {
+            if (category.isEmpty()) c.line.removeProperty(UiProps.CATEGORY);
+            else c.line.setProperty(UiProps.CATEGORY, category);
+            NetChapterEdit.requestEdit(c.id, c.line);
+        }
+        reloadChapters();
+        layout();
     }
 
     private void setGroup(List<ChapterInfo> infos, String group) {
@@ -762,12 +814,14 @@ public class QuestScreen extends GuiScreenCanvas implements INeedsRefresh, MapHo
     }
 
     /**
-     * The chapter shown next to this one inside its group in the panel (the panel lists ungrouped chapters first,
-     * then each group, so BQ's global neighbour is often in another group or hidden).
+     * The chapter shown next to this one inside its category and group in the panel (the panel lists ungrouped
+     * chapters first, then each group, so BQ's global neighbour is often in another group or hidden).
      */
     private ChapterInfo neighbour(ChapterInfo info, int delta) {
         List<ChapterInfo> siblings = new ArrayList<>();
-        for (ChapterInfo c : chapters.getChapters()) if (c.group.equals(info.group)) siblings.add(c);
+        for (ChapterInfo c : chapters.getChapters()) {
+            if (c.category.equals(info.category) && c.group.equals(info.group)) siblings.add(c);
+        }
         int i = siblings.indexOf(info);
         int j = i + delta;
         return i < 0 || j < 0 || j >= siblings.size() ? null : siblings.get(j);

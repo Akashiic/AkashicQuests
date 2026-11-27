@@ -36,6 +36,8 @@ public class ChapterInfo {
     /** Name shown in the panel: the short title when the chapter has one. */
     public final String label;
     public final String group;
+    /** Category above the group in the panel; empty = uncategorized. */
+    public final String category;
     public final OreDictTexture icon;
     /** At least one quest has rewards waiting. */
     public boolean pendingClaim;
@@ -56,6 +58,8 @@ public class ChapterInfo {
         this.label = net.minecraft.util.EnumChatFormatting
             .getTextWithoutFormattingCodes(shortTitle.isEmpty() ? name : QuestTranslation.translate(shortTitle));
         this.group = line.getProperty(UiProps.GROUP)
+            .trim();
+        this.category = line.getProperty(UiProps.CATEGORY)
             .trim();
         this.icon = new OreDictTexture(1F, line.getProperty(NativeProps.ICON), false, true);
     }

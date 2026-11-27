@@ -1,0 +1,36 @@
+# Categories in the chapter panel: Categoria → Grupo → Capítulo, collapse, edit menus
+world
+waitquests
+wait 40
+cmd /bq_admin edit true
+complete Olá, viajante
+complete Como funciona
+complete Livro
+wait 40
+open
+wait 30
+chapter Primeiros Passos
+wait 20
+shot c01_categories
+mouse 40 38
+wait 10
+shot c02_category_tooltip
+click 40 38
+wait 10
+shot c03_collapsed
+click 40 38
+wait 10
+edit on
+wait 10
+click 40 91 1
+wait 5
+shot c04_category_menu
+key 1
+wait 5
+click 50 77 1
+wait 5
+shot c05_chapter_menu
+menu Extras
+wait 20
+shot c06_moved_to_extras
+exit

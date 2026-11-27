@@ -1,3 +1,5 @@
 pack_name: "Technic Forbidden — Crônicas Akáshicas"
 pack_version: 1
 default_icon: minecraft:book
+# Categoria da barra lateral (Akasha Quests UI) acima dos grupos. Um capítulo pode trocar com `category:`.
+default_category: "Campanha Principal"

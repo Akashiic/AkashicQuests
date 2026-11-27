@@ -31,6 +31,16 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 CHAPTER_DIR = os.path.join(ROOT, 'quests', 'chapters')
 LOOT_FILE = os.path.join(ROOT, 'quests', 'loot', 'loot.yaml')
 SETTINGS_FILE = os.path.join(ROOT, 'quests', 'settings.yaml')
+
+
+def load_settings():
+    if not os.path.exists(SETTINGS_FILE):
+        return {}
+    with open(SETTINGS_FILE, encoding='utf-8') as f:
+        return yaml.safe_load(f) or {}
+
+
+SETTINGS = load_settings()
 REGISTRY_DIR = os.path.join(ROOT, 'registry')
 OUT_DIR = os.path.join(ROOT, 'dist', 'config', 'betterquesting')
 
@@ -476,6 +486,8 @@ class Chapter:
         self.order = float(meta.get('order', 9999))
         folder = os.path.basename(os.path.dirname(path))
         self.group = str(meta.get('group', GROUPS.get(folder, '')))
+        # Category above the group in the chapter panel; default from settings.yaml (default_category).
+        self.category = str(meta.get('category', SETTINGS.get('default_category', ''))).strip()
         self.shape = str(meta.get('shape', ''))
         if self.shape and self.shape not in SHAPES:
             raise GenError('%s: unknown shape %r (one of %s)' % (path, self.shape, ', '.join(SHAPES)))
@@ -760,6 +772,8 @@ def chapter_image(img, chapter, all_quests, ctx):
 
 def chapter_ui_props(c, all_quests):
     ui = OrderedDict()
+    if c.category:
+        ui['category:8'] = c.category
     if c.group:
         ui['group:8'] = c.group
     if c.shape:

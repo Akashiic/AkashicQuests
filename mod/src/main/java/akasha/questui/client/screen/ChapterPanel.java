@@ -20,12 +20,14 @@ import betterquesting.api2.client.gui.themes.presets.PresetIcon;
 import betterquesting.api2.utils.QuestTranslation;
 
 /**
- * Chapter panel (DESIGN §6): pack header, collapsible groups, chapter rows with state badges.
+ * Chapter panel (DESIGN §6): pack header, collapsible categories, collapsible groups inside them, chapter rows with
+ * state badges.
  * Pinned it takes its own column; unpinned it shrinks to a strip and slides over the map on hover.
  */
 public class ChapterPanel extends Widget {
 
     public static final int HEADER = 18;
+    public static final int CATEGORY_ROW = 16;
     public static final int GROUP_ROW = 13;
     public static final int ROW = 12;
     public static final int ICON = 8;
@@ -43,7 +45,9 @@ public class ChapterPanel extends Widget {
 
         void chapterContextMenu(ChapterInfo info, int mx, int my);
 
-        void groupContextMenu(String group, int mx, int my);
+        void groupContextMenu(String category, String group, int mx, int my);
+
+        void categoryContextMenu(String category, int mx, int my);
 
         void headerAddChapter();
 
@@ -58,17 +62,33 @@ public class ChapterPanel extends Widget {
 
     private static final class Row {
 
-        final String group; // group header when info == null
+        /** Category header when group and info are null. */
+        final String category;
+        /** Group header when info is null; null for a chapter outside any group. */
+        final String group;
         final ChapterInfo info;
         final int y;
         final int h;
+        /** Category rows only: progress and badges summed over its chapters. */
+        int done, total;
+        boolean pending, complete;
 
-        Row(String group, ChapterInfo info, int y, int h) {
+        Row(String category, String group, ChapterInfo info, int y, int h) {
+            this.category = category;
             this.group = group;
             this.info = info;
             this.y = y;
             this.h = h;
         }
+
+        boolean isCategory() {
+            return info == null && group == null;
+        }
+    }
+
+    /** Collapse key of a group: its name, or "category » group" inside a category (groups repeat across them). */
+    public static String groupKey(String category, String group) {
+        return category.isEmpty() ? group : category + " \u00BB " + group;
     }
 
     private final Host host;
@@ -116,11 +136,20 @@ public class ChapterPanel extends Widget {
                     + 4
                     + 3 * PAD);
         }
-        for (String g : groups().keySet()) max = Math.max(
-            max,
-            Draw.font()
-                .getStringWidth(g) + 10
-                + 2 * PAD);
+        for (ChapterInfo c : chapters) {
+            if (!c.group.isEmpty()) max = Math.max(
+                max,
+                Draw.font()
+                    .getStringWidth(QuestTranslation.translate(c.group)) + 10
+                    + 2 * PAD);
+            if (!c.category.isEmpty()) max = Math.max(
+                max,
+                Draw.font()
+                    .getStringWidth(QuestTranslation.translate(c.category)) + 10
+                    + BADGE
+                    + 4
+                    + 2 * PAD);
+        }
         return Math.max(MIN_W, Math.min(max, (int) (0.30 * screenW)));
     }
 
@@ -135,36 +164,63 @@ public class ChapterPanel extends Widget {
         return (int) Math.round(slideFrom + (slideTo - slideFrom) * t);
     }
 
-    private Map<String, List<ChapterInfo>> groups() {
+    private static Map<String, List<ChapterInfo>> byGroup(List<ChapterInfo> list) {
         Map<String, List<ChapterInfo>> g = new LinkedHashMap<>();
-        for (ChapterInfo c : chapters) g.computeIfAbsent(c.group, k -> new ArrayList<>())
+        for (ChapterInfo c : list) g.computeIfAbsent(c.group, k -> new ArrayList<>())
             .add(c);
         return g;
     }
 
-    /** Ungrouped chapters first (no header), then groups in order of first appearance. */
+    /**
+     * Uncategorized chapters first (no header), then categories in order of first appearance. Inside each level,
+     * ungrouped chapters come first, then groups in order of first appearance. Without categories the panel is the
+     * same as before they existed.
+     */
     private void rebuildRows() {
         rows.clear();
         int yy = 0;
-        Map<String, List<ChapterInfo>> g = groups();
+        Map<String, List<ChapterInfo>> cats = new LinkedHashMap<>();
+        for (ChapterInfo c : chapters) cats.computeIfAbsent(c.category, k -> new ArrayList<>())
+            .add(c);
+        List<ChapterInfo> loose = cats.remove("");
+        if (loose != null) yy = addGroups("", loose, yy);
+        for (Map.Entry<String, List<ChapterInfo>> e : cats.entrySet()) {
+            Row head = new Row(e.getKey(), null, null, yy, CATEGORY_ROW);
+            head.complete = true;
+            for (ChapterInfo c : e.getValue()) {
+                head.done += c.done;
+                head.total += c.total;
+                head.pending |= c.pendingClaim;
+                head.complete &= c.allComplete;
+            }
+            rows.add(head);
+            yy += CATEGORY_ROW;
+            if (Config.collapsedCategories.contains(e.getKey())) continue;
+            yy = addGroups(e.getKey(), e.getValue(), yy);
+        }
+        contentH = yy + 4;
+        clampScroll();
+    }
+
+    private int addGroups(String category, List<ChapterInfo> list, int yy) {
+        Map<String, List<ChapterInfo>> g = byGroup(list);
         List<ChapterInfo> loose = g.remove("");
         if (loose != null) {
             for (ChapterInfo c : loose) {
-                rows.add(new Row(null, c, yy, ROW));
+                rows.add(new Row(category, null, c, yy, ROW));
                 yy += ROW;
             }
         }
         for (Map.Entry<String, List<ChapterInfo>> e : g.entrySet()) {
-            rows.add(new Row(e.getKey(), null, yy, GROUP_ROW));
+            rows.add(new Row(category, e.getKey(), null, yy, GROUP_ROW));
             yy += GROUP_ROW;
-            if (Config.collapsedGroups.contains(e.getKey())) continue;
+            if (Config.collapsedGroups.contains(groupKey(category, e.getKey()))) continue;
             for (ChapterInfo c : e.getValue()) {
-                rows.add(new Row(e.getKey(), c, yy, ROW));
+                rows.add(new Row(category, e.getKey(), c, yy, ROW));
                 yy += ROW;
             }
         }
-        contentH = yy + 4;
-        clampScroll();
+        return yy;
     }
 
     private int listTop() {
@@ -235,7 +291,8 @@ public class ChapterPanel extends Widget {
             int ry = top + r.y;
             if (ry + r.h < listTop() || ry > y + h) continue;
             boolean hot = mx >= x && mx < x + dw - 1 && my >= Math.max(ry, listTop()) && my < ry + r.h;
-            if (r.info == null) drawGroup(r, ry, dw, hot);
+            if (r.isCategory()) drawCategory(r, ry, dw, hot, r.y > 0);
+            else if (r.info == null) drawGroup(r, ry, dw, hot);
             else drawChapter(r, ry, dw, hot, r.info.id.equals(sel), partialTick);
         }
         GL11.glPopMatrix();
@@ -272,9 +329,32 @@ public class ChapterPanel extends Widget {
         Draw.text(title, x + PAD, y + 5, Palette.TEXT, true);
     }
 
+    /** Category header: tinted band, divider above (except at the top), accent title, summed state badge. */
+    private void drawCategory(Row r, int ry, int dw, boolean hot, boolean divider) {
+        Draw.rect(x, ry, x + dw - 1, ry + r.h, hot ? Palette.ROW_HOVER : 0x0FFFFFFF);
+        if (divider) Draw.rect(x, ry, x + dw - 1, ry + 1, Palette.PANEL_EDGE);
+        boolean collapsed = Config.collapsedCategories.contains(r.category);
+        Draw.triangle(x + PAD, ry + 5, 6, collapsed ? Draw.RIGHT : Draw.DOWN, Palette.ACCENT);
+        int bx = x + dw - 1 - PAD - BADGE;
+        int by = ry + (r.h - BADGE) / 2;
+        Draw.text(
+            Draw.ellipsize(QuestTranslation.translate(r.category), bx - 2 - (x + PAD + 9)),
+            x + PAD + 9,
+            ry + 4,
+            Palette.ACCENT,
+            true);
+        if (r.pending) {
+            Draw.bind(Textures.BADGE_ALERT);
+            Draw.tex(bx, by, bx + BADGE, by + BADGE, 0xFFFFFFFF);
+        } else if (r.complete && r.total > 0) {
+            Draw.bind(Textures.BADGE_CHECK);
+            Draw.tex(bx, by, bx + BADGE, by + BADGE, 0xFFFFFFFF);
+        }
+    }
+
     private void drawGroup(Row r, int ry, int dw, boolean hot) {
         if (hot) Draw.rect(x, ry, x + dw - 1, ry + r.h, Palette.ROW_HOVER);
-        boolean collapsed = Config.collapsedGroups.contains(r.group);
+        boolean collapsed = Config.collapsedGroups.contains(groupKey(r.category, r.group));
         Draw.triangle(x + PAD, ry + 3.5, 6, collapsed ? Draw.RIGHT : Draw.DOWN, Palette.TEXT_2);
         Draw.text(
             Draw.ellipsize(QuestTranslation.translate(r.group), dw - 2 * PAD - 12),
@@ -348,13 +428,24 @@ public class ChapterPanel extends Widget {
         }
         Row r = rowAt(mx, my);
         if (r == null) return true;
-        if (r.info == null) {
+        if (r.isCategory()) {
             if (button == 0) {
-                if (!Config.collapsedGroups.remove(r.group)) Config.collapsedGroups.add(r.group);
+                if (!Config.collapsedCategories.remove(r.category)) Config.collapsedCategories.add(r.category);
                 Config.saveState();
                 rebuildRows();
             } else if (button == 1 && host.isEditing()) {
-                host.groupContextMenu(r.group, mx, my);
+                host.categoryContextMenu(r.category, mx, my);
+            }
+            return true;
+        }
+        if (r.info == null) {
+            if (button == 0) {
+                String key = groupKey(r.category, r.group);
+                if (!Config.collapsedGroups.remove(key)) Config.collapsedGroups.add(key);
+                Config.saveState();
+                rebuildRows();
+            } else if (button == 1 && host.isEditing()) {
+                host.groupContextMenu(r.category, r.group, mx, my);
             }
             return true;
         }
@@ -388,6 +479,18 @@ public class ChapterPanel extends Widget {
                 Lang.get("progress_total", done, total, String.format("%.1f", total > 0 ? done * 100.0 / total : 0)));
         }
         Row r = rowAt(mx, my);
+        if (r != null && r.isCategory()) {
+            List<String> tt = new ArrayList<>();
+            tt.add(QuestTranslation.translate(r.category));
+            tt.add(
+                "§7" + Lang.get(
+                    "progress",
+                    r.done,
+                    r.total,
+                    String.format("%.1f", r.total > 0 ? r.done * 100.0 / r.total : 0)));
+            if (r.pending) tt.add("§6" + Lang.get("rewards_waiting"));
+            return tt;
+        }
         if (r == null || r.info == null) return null;
         ChapterInfo c = r.info;
         List<String> tt = new ArrayList<>();

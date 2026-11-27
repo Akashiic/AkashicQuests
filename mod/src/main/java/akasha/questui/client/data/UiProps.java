@@ -20,6 +20,11 @@ public final class UiProps {
     /** Quest: shape id. Chapter: default shape of its quests. Empty = inherit. */
     public static final IPropertyType<String> SHAPE = new PropertyTypeString(new ResourceLocation(DOMAIN, "shape"), "");
 
+    /** Chapter: category (top level of the chapter panel, above groups). Empty = uncategorized. */
+    public static final IPropertyType<String> CATEGORY = new PropertyTypeString(
+        new ResourceLocation(DOMAIN, "category"),
+        "");
+
     /** Chapter: group title in the chapter panel. Empty = ungrouped. */
     public static final IPropertyType<String> GROUP = new PropertyTypeString(new ResourceLocation(DOMAIN, "group"), "");
 

@@ -1,3 +1,16 @@
+# Changelog — Akasha Quests UI 1.1.0
+
+**Categorias na barra lateral**
+- Novo nível acima dos grupos: **Categoria → Grupo → Capítulo**. Cada categoria tem cabeçalho
+  próprio (faixa com nome em ciano), recolhe/expande com um clique e mostra `!` (recompensa
+  esperando) ou ✔ (tudo concluído); a dica traz o progresso somado.
+- Modo de edição: clique direito na categoria renomeia ou remove; os menus do capítulo e do grupo
+  ganham o submenu **Categoria** (sem categoria, existentes, nova categoria).
+- Dado novo `akashaui:category` no capítulo (o BQ sem o mod ignora). Sem categorias o painel fica
+  igual ao de antes.
+- Livro: os 102 capítulos (8.939 quests) estão na categoria **Campanha Principal**
+  (`default_category` em `quests/settings.yaml`; um capítulo pode trocar com `category:`).
+
 # Changelog — Akasha Quests UI 1.0.1
 
 Auditoria de render, interface, UX e lógica. Cada achado foi conferido no código do mod, do

@@ -145,6 +145,7 @@ Sem `shape`, a forma vem do tipo: `info` → `rsquare`, `milestone` → `gear`, 
 
 | Campo | Significado |
 | --- | --- |
+| `category` | Categoria na barra lateral, o nível acima dos grupos (Categoria → Grupo → Capítulo). Padrão: `default_category` de `quests/settings.yaml` (hoje **Campanha Principal**). Use `category: ""` para deixar fora de categoria (aparece no topo). |
 | `group` | Grupo na barra lateral. Padrão pela pasta: `story` → Crônicas Akáshicas, `base`, `aventura`, `tech` → Tecnologia, `magia`, `vida`, `aedf3` → A Era do Futuro 3, `atm` → All the Mods, `epilogo`. Use `group: ""` para deixar fora de grupo (aparece no topo). |
 | `short` | Nome curto na barra lateral. Padrão: o título sem o prefixo do grupo/série. |
 | `shape` | Forma padrão das quests do capítulo. |

@@ -2,6 +2,7 @@ chapter:
   id: t_encantos
   title: "Encantamentos"
   order: 20
+  category: "Extras"
   icon: minecraft:enchanting_table
   desc: Livros, estantes e mesa de encantamento.
 quests:

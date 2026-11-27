@@ -34,7 +34,9 @@ public final class Config {
 
     // Client view state, saved across sessions
     public static boolean sidebarPinned = true;
+    /** Collapsed groups: the group name, or "category » group" for a group inside a category. */
     public static final Set<String> collapsedGroups = new LinkedHashSet<>();
+    public static final Set<String> collapsedCategories = new LinkedHashSet<>();
 
     private Config() {}
 
@@ -84,6 +86,10 @@ public final class Config {
         collapsedGroups.clear();
         collapsedGroups.addAll(
             Arrays.asList(cfg.getStringList("collapsedGroups", STATE, new String[0], "Collapsed chapter groups.")));
+        collapsedCategories.clear();
+        collapsedCategories.addAll(
+            Arrays.asList(
+                cfg.getStringList("collapsedCategories", STATE, new String[0], "Collapsed chapter categories.")));
         if (cfg.hasChanged()) cfg.save();
     }
 
@@ -117,6 +123,8 @@ public final class Config {
             .set(sidebarPinned);
         cfg.get(STATE, "collapsedGroups", new String[0])
             .set(collapsedGroups.toArray(new String[0]));
+        cfg.get(STATE, "collapsedCategories", new String[0])
+            .set(collapsedCategories.toArray(new String[0]));
         cfg.save();
     }
 }

@@ -188,9 +188,9 @@ do mapa, do painel e dos menus convertem y por `H − y·f` com a altura real `H
 ```
 ┌────────────┬──────────────────────────────────────────────┬──┐
 │ Capítulos  │ título · progresso                            │▣ │ ← barra de ferramentas
-│ ▼ Grupo    │                                              │📌│   (20 px)
-│   ◆ Cap. 1 │          mapa de quests (câmera §1)          │🔍│
-│   ◆ Cap. 2 │                                              │ⓘ │
+│▼ CATEGORIA✔│                                              │📌│   (20 px)
+│ ▼ Grupo    │          mapa de quests (câmera §1)          │🔍│
+│   ◆ Cap. 1 │                                              │ⓘ │
 │ ▶ Grupo    │                                              │  │
 │            │                                              │⚙ │
 │            │                                              │✎ │
@@ -213,8 +213,18 @@ da quest, depois a seleção do modo de edição; ESC sem nada aberto fecha o li
 `W_s = clamp(maxᵢ largura(títuloᵢ) + 8 + 8 + 8 + 16, 110, ⌊0,30·W⌋)`
 (ícone 8 + recuo do grupo 8 + selo 8 + margens; o nome do pack no cabeçalho é encurtado com
 reticências e não alarga o painel). Os capítulos mostram o nome curto `akashaui:title` quando existe. Linhas de 12 px (ícone 8 px: a 2× da GUI
-isso é 16 px de dispositivo, escala 1:1 do sprite do item), cabeçalho de grupo 13 px,
-cabeçalho do painel 18 px. Dois modos:
+isso é 16 px de dispositivo, escala 1:1 do sprite do item), cabeçalho de categoria 16 px,
+cabeçalho de grupo 13 px, cabeçalho do painel 18 px.
+
+**Categorias.** Nível acima dos grupos: Categoria → Grupo → Capítulo. Capítulos sem categoria vêm
+primeiro (sem cabeçalho), depois cada categoria na ordem em que aparece; dentro dela, os capítulos
+sem grupo e depois os grupos, como no nível de cima. Sem nenhuma categoria o painel é igual ao de
+antes. O cabeçalho é uma faixa `#FFFFFF` α 0,06 com divisória `#3A3A44` acima (menos no topo),
+triângulo e nome em `#3FD2E0` e, à direita, `!` (alguma recompensa esperando) ou ✔ (tudo concluído);
+a dica mostra o progresso somado. Clique recolhe/expande (salvo em `collapsedCategories`); no modo
+de edição o clique direito renomeia ou remove a categoria, e os menus do capítulo e do grupo ganham
+o submenu Categoria. O estado recolhido de um grupo dentro de categoria é salvo como
+`categoria » grupo`. Dois modos:
 
 * **Fixada** (📌 ligado, padrão = `lockTray` do BQ): o mapa começa em `x = W_s`.
 * **Recolhida**: tira de 10 px com `▶`. Passar o mouse expande sobre o mapa, com
@@ -308,12 +318,13 @@ Lista NBT `akashaui:images` no capítulo. Cada imagem:
 | Onde | Chave | Tipo | Uso |
 | --- | --- | --- | --- |
 | quest | `shape` | string | forma (§2); vazio = padrão |
+| capítulo | `category` | string | categoria na barra lateral (nível acima do grupo) |
 | capítulo | `group` | string | nome do grupo na barra lateral |
 | capítulo | `shape` | string | forma padrão do capítulo |
 | capítulo | `images` | lista | imagens (§8) |
 
 No JSON do BQ (multi-arquivo) aparecem como `"akashaui:10": {"shape:8": "hexagon"}`. O
-`bqgen` gera esses campos a partir do YAML (`shape`, `group`, `images`).
+`bqgen` gera esses campos a partir do YAML (`shape`, `category`, `group`, `images`).
 
 ## 10. Paleta
 
