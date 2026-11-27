@@ -16,6 +16,8 @@ Especificação completa (geometria, layout, cores, dados): [docs/DESIGN.md](doc
 | ![mapa](docs/img/mapa.png) | ![janela](docs/img/janela_quest.png) |
 | **Zoom (formas com anti-aliasing)** | **Menu de contexto** |
 | ![zoom](docs/img/zoom.png) | ![menu](docs/img/menu.png) |
+| **Categorias na barra lateral** | **Menu do capítulo: Categoria** |
+| ![categorias](docs/img/categorias.png) | ![menu de categoria](docs/img/categoria_menu.png) |
 | **Fundo translúcido (72 %)** | |
 | ![fundo](docs/img/fundo_translucido.png) | |
 | **Modo de edição: imagem selecionada** | **Propriedades da imagem** |
@@ -86,7 +88,7 @@ python3 ../tools/bqgen/bqgen.py build --chapters devtest/quests --out run/client
 xvfb-run -a -s "-screen 0 1280x720x24" ./gradlew runClient -Pselftest=devtest/tour.txt
 ```
 
-Roteiros em `devtest/`: `smoke` (primeira olhada), `tour` (estados, hover, menus, janela, edição,
+Roteiros em `devtest/`: `smoke` (primeira olhada), `categories` (categorias, recolher e menus), `tour` (estados, hover, menus, janela, edição,
 imagens, zoom, painel recolhido), `edit` (mover, redimensionar e girar imagens, mover quests),
 `small` (1920×1080 com escala automática, GUI 480×270; use `-PselftestWidth=1920 -PselftestHeight=1080`),
 `bqscreens` (telas do próprio BQ com o tema) e `real` (o livro completo de `dist/`). O LWJGL 2
